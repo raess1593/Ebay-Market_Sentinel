@@ -30,6 +30,17 @@ class WallapopScraper:
         self.driver = uc.Chrome(options=self.options, version_main=self.main_version)
         self.wait = WebDriverWait(self.driver, 12)
 
+    # Navigate to the page
+    def fetch_page(self, url):
+        # Ensure page loaded correctly
+        try:
+            self.driver.get(url)
+            self.wait.until(ec.presence_of_element_located((By.TAG_NAME, "body")))
+            time.sleep(random.uniform(2, 4))
+        
+        except Exception as e:
+            print(f"Error loading page: {e}")
+    
     # Close page
     def close(self):
         if self.driver:
