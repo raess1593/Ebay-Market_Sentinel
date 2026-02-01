@@ -45,7 +45,7 @@ class WallapopScraper:
             print(f"Error loading page: {e}")
     
     # Find and save products main info
-    def get_page_articles(self, n=200):
+    def get_page_articles(self, n):
         try:
             self.load_more()
         except:
@@ -71,13 +71,7 @@ class WallapopScraper:
             if scroll_counter > 3:
                 break
         
-        for p in products_loaded:
-            product_name = p.find_element(By.CSS_SELECTOR, "h3[class*='ItemCard__title']").text
-            price =  p.find_element(By.CSS_SELECTOR, "[aria-label='Item price']").text
-            self.data.append({
-                "product_name": product_name,
-                "price": price
-            })
+        self.save_to_data(products_loaded)
 
     # Click "Load more" button
     def load_more(self):
@@ -91,6 +85,26 @@ class WallapopScraper:
         self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", button)
         time.sleep(random.uniform(1, 2))
         self.driver.execute_script("arguments[0].click();", button)
+        
+    # Save in self.data all the loaded products
+    def save_to_data(self, products):
+        for p in products:
+            product_name = p.find_element(By.CSS_SELECTOR, "h3[class*='ItemCard__title']").text
+            price =  p.find_element(By.CSS_SELECTOR, "[aria-label='Item price']").text
+            self.data.append({
+                "product_name": product_name,
+                "price": price,
+                "shipping_available": self.check_exists(p, "wallapop-badge[badge-type*='shippingAvailable']"),
+                "outstanding": self.check_exists(p, "p[class*='bump-label']")
+            })
+
+    # Ignore error if not found
+    def check_exists(self, parent, element):
+        try:
+            parent.find_element(By.CSS_SELECTOR, element)
+            return True
+        except:
+            return False
         
     # Close page
     def close(self):
